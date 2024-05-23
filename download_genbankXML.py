@@ -1,3 +1,6 @@
+#conda install python
+#pip install Bio
+
 import os
 import requests
 from Bio import Entrez
