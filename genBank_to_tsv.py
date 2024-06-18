@@ -98,6 +98,7 @@ def xml_to_tsv(xml_file, output_dir):
 def process(args):
 	input_dir = args.input_dir
 	output_dir = args.output_dir
+    os.makedirs(output_dir, exist_ok=True)
 	merged_data = []
 	for each_xml in os.listdir(input_dir):
 		print("parsing : " + each_xml)
