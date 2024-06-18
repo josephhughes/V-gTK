@@ -1,4 +1,5 @@
 #conda install python
+#conda install requests
 
 import os
 import requests
