@@ -98,16 +98,16 @@ def xml_to_tsv(xml_file, output_dir):
 def process(args):
 	input_dir = args.input_dir
 	output_dir = args.output_dir
-    os.makedirs(output_dir, exist_ok=True)
+	os.makedirs(output_dir, exist_ok=True)
 	merged_data = []
 	for each_xml in os.listdir(input_dir):
 		print("parsing : " + each_xml)
 		data = xml_to_tsv(join(input_dir, each_xml), output_dir)
 		merged_data.extend(data)
 
-		df = pd.DataFrame(merged_data)
-		df.fillna('')
-		df.to_csv(join(output_dir, "gB_matrix.tsv"), sep="\t", index=False)
+	df = pd.DataFrame(merged_data)
+	df = df.drop_duplicates(subset='Locus', keep="last")
+	df.to_csv(join(output_dir, "gB_matrix.tsv"), sep="\t", index=False)
 
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Extract GenBank XML files to a TSV table')
