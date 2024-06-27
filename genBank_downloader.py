@@ -9,7 +9,8 @@ from os.path import join
 
 # Fetch accession ID's
 def fetch_ids(search_term, base_url, retmax, email):
-	search_url = base_url + "esearch.fcgi?db=nucleotide&term=" + search_term + "&retmax=" + str(retmax) + "&usehistory=y&email=" + email + "&retmode=json"
+	search_url = base_url + "esearch.fcgi?db=nucleotide&term=txid" + search_term + "[Organism:exp]&retmax=" + str(retmax) + "&usehistory=y&email=" + email + "&retmode=json"
+	print (search_url)
 	response = requests.get(search_url)
 	response.raise_for_status()
 	data = response.json()
@@ -46,7 +47,7 @@ def download(args):
 
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Download and update GenBank XML files for a given species')
-	parser.add_argument('-s', '--search_term', help='Search term, example: rabies virus[Organism]', default='rabies virus[Organism]')
+	parser.add_argument('-s', '--search_term', help='Search term, generally a taxaid example: 11292', required=True)
 	parser.add_argument('-o', '--output_dir', help='Output directory where all the XML files are stored', default='GenBank')
 	parser.add_argument('-r', '--max_ret', help='Max number of records to be retrieved. Default is 100000', default=100000, type=int)
 	parser.add_argument('-b', '--batch_size', help='Max number of XML files to pull and merge in to a single file', default=100, type=int)
