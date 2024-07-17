@@ -1,13 +1,15 @@
 # TING
 virus genomic data integration
 
-The script dependencies can be found at the top of the script
+The script dependencies can be found at the top of the script. For any help, please run the following.
+```
+python <SCRIPT_NAME.py> -h
+```
 
 ## GenBank XML downloader
 ```
 $python genBank_downloader.py -b 200
 ```
-
 
 ## GenBank XML to TSV
 ```

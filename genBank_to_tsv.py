@@ -39,8 +39,9 @@ def xml_to_tsv(xml_file, output_dir):
 		for gb_feature in gbseq.findall('GBSeq_feature-table/GBFeature'):
 			if gb_feature.find('GBFeature_key').text == 'source':
 				for qualifier in gb_feature.findall('GBFeature_quals/GBQualifier'):
-					name = qualifier.find('GBQualifier_name').text
-					value = qualifier.find('GBQualifier_value').text
+					name = qualifier.find('GBQualifier_name').text if qualifier.find('GBQualifier_name') is not None else None
+					value = qualifier.find('GBQualifier_value').text if qualifier.find('GBQualifier_value') is not None else None
+					collection_date = 'N/A'
 					if name == 'mol_type':
 						mol_type = value
 					elif name == 'isolate':
@@ -53,21 +54,23 @@ def xml_to_tsv(xml_file, output_dir):
 							country = value
 					elif name == 'host':
 							host = value
+					elif name == 'collection_date':
+							collection_date = value
 			elif gb_feature.find('GBFeature_key').text == 'gene':
 				gene_info = {}
 				gene_info['gene_location'] = gb_feature.find('GBFeature_location').text
 				for qualifier in gb_feature.findall('GBFeature_quals/GBQualifier'):
-					name = qualifier.find('GBQualifier_name').text
-					value = qualifier.find('GBQualifier_value').text
+					name = qualifier.find('GBQualifier_name').text if qualifier.find('GBQualifier_name') is not None else None
+					value = qualifier.find('GBQualifier_value').text if qualifier.find('GBQualifier_value') is not None else None
 					if name == 'gene':
 						gene_info['gene_name'] = value
 						genes.append(gene_info)
 			elif gb_feature.find('GBFeature_key').text == 'CDS':
 				cds_info = {}
-				cds_info['cds_location'] = gb_feature.find('GBFeature_location').text
+				cds_info['cds_location'] = gb_feature.find('GBFeature_location').text if qualifier.find('GBFeature_location') is not None else None
 				for qualifier in gb_feature.findall('GBFeature_quals/GBQualifier'):
-					name = qualifier.find('GBQualifier_name').text
-					value = qualifier.find('GBQualifier_value').text
+					name = qualifier.find('GBQualifier_name').text if qualifier.find('GBQualifier_name') is not None else None
+					value = qualifier.find('GBQualifier_value').text if qualifier.find('GBQualifier_value') is not None else None
 					cds_info[name] = value
 				cds.append(cds_info)
 						
@@ -78,6 +81,7 @@ def xml_to_tsv(xml_file, output_dir):
 		content['DB Xref'] = db_xref
 		content['Country'] = country
 		content['Host'] = host
+		content['Collection_date'] = content['Collection_date'] = collection_date if collection_date is not None else 'None'
 		sequence = gbseq.find('GBSeq_sequence')
 		content['Sequence'] = sequence.text if sequence is not None else ''
 		content['Genes'] = '; '.join([f"{gene['gene_name']}({gene['gene_location']})" for gene in genes])
@@ -90,7 +94,7 @@ def xml_to_tsv(xml_file, output_dir):
 			content['Position'] = reference.find('GBReference_position').text
 			authors = [author.text for author in reference.findall('GBReference_authors/GBAuthor')]
 			content['Authors'] = ', '.join(authors)
-			content['Title'] = reference.find('GBReference_title').text
+			content['Title'] = reference.find('GBReference_title').text if qualifier.find('GBReference_title') is not None else None
 			content['Journal'] = reference.find('GBReference_journal').text
 			data.append(content)
 	return data
@@ -98,16 +102,16 @@ def xml_to_tsv(xml_file, output_dir):
 def process(args):
 	input_dir = args.input_dir
 	output_dir = args.output_dir
-    os.makedirs(output_dir, exist_ok=True)
+	os.makedirs(output_dir, exist_ok=True)
 	merged_data = []
 	for each_xml in os.listdir(input_dir):
 		print("parsing : " + each_xml)
 		data = xml_to_tsv(join(input_dir, each_xml), output_dir)
 		merged_data.extend(data)
 
-		df = pd.DataFrame(merged_data)
-		df.fillna('')
-		df.to_csv(join(output_dir, "gB_matrix.tsv"), sep="\t", index=False)
+	df = pd.DataFrame(merged_data)
+	df = df.drop_duplicates(subset='Locus', keep="last")
+	df.to_csv(join(output_dir, "gB_matrix.tsv"), sep="\t", index=False)
 
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Extract GenBank XML files to a TSV table')
