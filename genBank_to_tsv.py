@@ -33,6 +33,7 @@ def xml_to_tsv(xml_file, output_dir):
 		db_xref = ''
 		country = ''
 		host = ''
+		collection_date = ''
 		genes = []
 		cds = []
 
@@ -41,7 +42,6 @@ def xml_to_tsv(xml_file, output_dir):
 				for qualifier in gb_feature.findall('GBFeature_quals/GBQualifier'):
 					name = qualifier.find('GBQualifier_name').text if qualifier.find('GBQualifier_name') is not None else None
 					value = qualifier.find('GBQualifier_value').text if qualifier.find('GBQualifier_value') is not None else None
-					collection_date = 'N/A'
 					if name == 'mol_type':
 						mol_type = value
 					elif name == 'isolate':
