@@ -35,6 +35,7 @@ def xml_to_tsv(xml_file, output_dir):
 		host = ''
 		collection_date = ''
 		segment = ''
+		serotype = ''
 		genes = []
 		cds = []
 
@@ -59,6 +60,8 @@ def xml_to_tsv(xml_file, output_dir):
 						collection_date = value
 					elif name == 'segment':
 						segment = value
+					elif name == 'serotype':
+                                                serotype = value
 			elif gb_feature.find('GBFeature_key').text == 'gene':
 				gene_info = {}
 				gene_info['gene_location'] = gb_feature.find('GBFeature_location').text
@@ -86,6 +89,7 @@ def xml_to_tsv(xml_file, output_dir):
 		content['Host'] = host
 		content['Collection_date'] = collection_date
 		content['segment'] = segment
+		content['serotype'] = serotype
 		sequence = gbseq.find('GBSeq_sequence')
 		content['Sequence'] = sequence.text if sequence is not None else ''
 		content['Genes'] = '; '.join([f"{gene['gene_name']}({gene['gene_location']})" for gene in genes])
