@@ -1,6 +1,6 @@
 #conda install python
 #conda install requests
-# check for max number of records and add that in the max_rets
+# check for max number of records and add that in the max_rets (completed)
 
 import os
 import requests
@@ -12,7 +12,7 @@ from os.path import join
 def fetch_ids(search_term, base_url, email):
 	retmax = get_record_count(search_term, email)
 	search_url = base_url + "esearch.fcgi?db=nucleotide&term=txid" + search_term + "[Organism:exp]&retmax=" + str(retmax) + "&usehistory=y&email=" + email + "&retmode=json"
-	print (search_url)
+	#print (search_url)
 	response = requests.get(search_url)
 	response.raise_for_status()
 	data = response.json()
