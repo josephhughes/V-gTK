@@ -1,5 +1,6 @@
 #conda install python
 #conda install requests
+# check for max number of records and add that in the max_rets
 
 import os
 import requests

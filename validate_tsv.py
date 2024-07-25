@@ -78,7 +78,7 @@ def validate_host(host):
 		return host
 	try:
 		if taxa_dicts[host]:
-				return "yes"
+			return "yes"
 		elif host in taxa_dicts.keys():
 			return "yes"
 		else:
