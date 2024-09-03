@@ -5,6 +5,14 @@ from os.path import join
 import xml.etree.ElementTree as ET
 import pandas as pd
 
+def count_ATGCN(sequence):
+	nucl_dict = {'A': 0, 'T': 0, 'G': 0, 'C': 0, 'N': 0}
+	sequence = sequence.upper()
+	for each_nucl in sequence:
+		if each_nucl in nucl_dict:
+			nucl_dict[each_nucl] +=1
+	return nucl_dict['A'], nucl_dict['T'], nucl_dict['G'], nucl_dict['C'], nucl_dict['N']
+
 # Parse the XML and extract data
 def xml_to_tsv(xml_file, output_dir):
 	tree = ET.parse(xml_file)
@@ -94,7 +102,13 @@ def xml_to_tsv(xml_file, output_dir):
 		content['Sequence'] = sequence.text if sequence is not None else ''
 		content['Genes'] = '; '.join([f"{gene['gene_name']}({gene['gene_location']})" for gene in genes])
 		content['CDS Info'] = '; '.join([f"{k}: {v}" for each_cds in cds for k, v in each_cds.items()])
-
+		nucl_count = count_ATGCN(content['Sequence'])
+		content['A'] = nucl_count[0]
+		content['T'] = nucl_count[1]
+		content['G'] = nucl_count[2]
+		content['C'] = nucl_count[3]
+		content['N'] = nucl_count[4]
+		
 		references = []
 		for reference in gbseq.findall('GBSeq_references/GBReference'):
 			ref = {}
