@@ -17,7 +17,7 @@ with open(args.input_file, 'r') as infile, open(args.output_file, 'w') as outfil
     reader = csv.DictReader(infile, delimiter='\t')
     
     # Create fieldnames for the output TSV, adding a new 'parsed' column
-    fieldnames = reader.fieldnames + ['parsed']
+    fieldnames = reader.fieldnames + ['Parsed_strain']
     
     # Set up DictWriter to write to the output TSV file
     writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter='\t')
@@ -39,7 +39,7 @@ with open(args.input_file, 'r') as infile, open(args.output_file, 'w') as outfil
             parsed_text = match.group(0) if match else ''  # If there's no match, return an empty string
 
         # Add the parsed text as a new column to the row
-        row['parsed'] = parsed_text
+        row['Parsed_strain'] = parsed_text
 
         # Write the updated row to the output TSV file
         writer.writerow(row)
