@@ -3,7 +3,7 @@ from collections import defaultdict
 import argparse
 import sys
 # TODO: modify the script so it will work for different segmented viruses because they don't always have the same number of segments
-
+# python3 cast_strains_by_segments.py txid11320_240830/gB_matrix_strain.tsv txid11320_240830/gB_cast.tsv
 
 # Function to pivot the data
 def pivot_data(input_file, output_file, required_segments, delimiter="\t"):
@@ -13,6 +13,9 @@ def pivot_data(input_file, output_file, required_segments, delimiter="\t"):
     
     # Set to collect all segments (which will become column names)
     segments = set()
+
+    # dicitonary of dictionary that stores Length and Create Date for each Locus
+    locus_data = defaultdict(lambda: defaultdict(list))
 
     # Counters for complete and incomplete genomes
     complete_count = 0
@@ -32,9 +35,17 @@ def pivot_data(input_file, output_file, required_segments, delimiter="\t"):
             for row in reader:
                 # Get the key for grouping (Parsed_strain)
                 parsed_strain = row['Parsed_strain']
+                # only add to locus_data and data_wide if parsed_strain is not empty
+                #if not parsed_strain:
+                #    continue
+                 
+
                 # Get the segment and locus values
                 segment = row['segment']
                 locus = row['Locus']
+                # add Length and Create Date to the locus_data dictionary
+                locus_data[locus]['Length'] = row['Length']
+                locus_data[locus]['Create Date'] = row['Create Date']
 
                 # Append the locus value to the list for the appropriate segment
                 data_wide[parsed_strain][segment].append(locus)
@@ -50,8 +61,11 @@ def pivot_data(input_file, output_file, required_segments, delimiter="\t"):
 
     # Convert the set of segments to a sorted list for consistent column order
     segments = sorted(segments)
+    print(f"Segments found: {segments}")
 
-    # Write the pivoted data into a new CSV
+    # Write to two pivoted data into a new CSV, one pivot data with the list of locus 
+    # the first pivot data will have the list of locus for each segment and the second pivot data will have the longest locus for each segment
+    # also the first pivot will list all segment labels and the second pivot will list only the required segments
     with open(output_file, mode='w', newline='') as csv_output_file:
         # Define the column names for the output file
         fieldnames = ['Parsed_strain'] + segments + ['Complete_status'] # 'Parsed_strain' + all the segments as column names + whether the genome is complete with all 8 segments
@@ -87,10 +101,55 @@ def pivot_data(input_file, output_file, required_segments, delimiter="\t"):
                
             # Write the row to the CSV
             writer.writerow(row)
-
+        
     # Print the counts of Complete and Incomplete genomes
     print(f"Number of Complete genomes: {complete_count}")
     print(f"Number of Incomplete genomes: {incomplete_count}")
+
+    # and another pivot data where  the longest locus is chosen and if the same length the most recent created date is chosen
+    with open(output_file.replace(".tsv", "_longest_locus.tsv"), mode='w', newline='') as csv_output_file:
+        # Define the column names for the output file
+        fieldnames = ['Parsed_strain'] + required_segments + ['Complete_status']
+
+        # Create a DictWriter instance  
+        writer = csv.DictWriter(csv_output_file, fieldnames=fieldnames, delimiter=delimiter)
+
+        # Write the header row
+        writer.writeheader()
+
+        # Write the rows of the wide data
+        for strain, loci_dict in data_wide.items():
+            # Create a row dictionary
+            row = {'Parsed_strain': strain}
+            
+            # this is the validated table so in this case the pivot only has cases where the Parsed_strain is not empty
+            if not strain:
+                continue
+ 
+
+            # Populate the row with comma-separated Locus values for each segment
+            for segment in required_segments:
+                # if there are multiple loci for a segment, select the longest locus for each segment 
+                # and if the loci are the same length, choose the most recent created date
+                
+                loci = loci_dict.get(segment, [])
+                if len(loci)>1:
+                    # Find the longest locus based on the Length stored in locus_data
+                    longest_locus = max(loci, key=lambda locus: int(locus_data[locus]['Length']))
+                    longest_locus = max(loci, key=lambda locus: (int(locus_data[locus]['Length']), locus_data[locus]['Create Date']))
+                    row[segment] = longest_locus
+                else:
+                    row[segment] = loci[0] if loci else ''  # Leave empty if there's no locus for this segment
+            # Check if all required segments have at least one Locus
+            complete = all(bool(loci_dict.get(segment)) for segment in required_segments)
+
+            # Add the "Complete" or "Incomplete" status
+            row['Complete_status'] = 'Complete' if complete else 'Incomplete'            
+               
+            # Write the row to the CSV
+            writer.writerow(row)
+
+
 
 # Set up argument parser
 parser = argparse.ArgumentParser(description='Compile the per strain accession numbers to validate a complete genome.')

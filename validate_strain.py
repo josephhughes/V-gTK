@@ -9,7 +9,7 @@ parser.add_argument('output_file', help='Path to the output TSV file')
 args = parser.parse_args()
 
 # Regular expression to extract the influenza A strain name
-pattern = r"A\/[A-Za-z]+\/[A-Za-z0-9\-]+\/\d+"
+pattern = r"A\/[A-Za-z\-\s]+\/[A-Za-z0-9\.\_\-\s]+\/[A-Za-z0-9]+\/?\d*"
 
 # Open and read the TSV file
 with open(args.input_file, 'r') as infile, open(args.output_file, 'w') as outfile:
