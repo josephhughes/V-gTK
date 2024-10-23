@@ -60,7 +60,7 @@ def xml_to_tsv(xml_file, output_dir):
 						isolation_source = value
 					elif name == 'db_xref':
 						db_xref = value
-					elif name == 'country':
+					elif name == 'country' or name == "geo_loc_name":
 						country = value
 					elif name == 'host':
 						host = value
