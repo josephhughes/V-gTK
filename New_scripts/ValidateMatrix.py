@@ -80,16 +80,16 @@ class ValidateMatrix:
 
 	def validate_country(self, country, country_dict):
 		if pd.isna(country):
-			return ["NA", "NA", "NA"]
+			return "NA"
 		country = country.split(':')[0]
 		if country in country_dict:
 			split_line = country_dict[country].split('\t')
 			alpha3_code = split_line[0]
 			region = split_line[3]
 			sub_region = split_line[3]
-			return [alpha3_code, region, sub_region]
+			return country
 		else:
-			return ["NA", "NA", "NA"]
+			return "NA"
 
 	'''
 	def validate_host(self, host_name, taxa_dict):
@@ -117,12 +117,14 @@ class ValidateMatrix:
 		print(f"Taxa dictionary has {len(taxa_dict.keys())} taxa names") 
 		print(f"Reading meta data {self.gb_matrix}")
 		df = pd.read_csv(self.gb_matrix, sep='\t')
-		df['collection_date_validated'] = df['collection_date'].apply(self.validate_date)
-		country_details = df['country'].apply(lambda x: self.validate_country(x, country_dict))
+		#df['collection_date_validated'] = df['collection_date'].apply(self.validate_date)
+		df['collection_date_validated'] = df['collection_date'].apply(lambda x: self.validate_date(x))
+		df['country_validated'] = df['country'].apply(lambda x: self.validate_country(x, country_dict))
 		df['host_validated'] = df['host'].apply(lambda x: self.validate_host(x, taxa_dict))
-		df[['alpha3_code', 'region', 'sub_region']] = pd.DataFrame(country_details.tolist(), index=df.index)
-		filtered_df = df[df[['collection_date_validated', 'alpha3_code', 'region', 'sub_region']].isnull().any(axis=1)]
-		filtered_df = filtered_df[['locus', 'primary_accession', 'collection_date_validated', 'alpha3_code', 'region', 'sub_region', 'host_taxa']]
+		#df[['alpha3_code', 'region', 'sub_region']] = pd.DataFrame(country_details.tolist(), index=df.index)
+		filtered_df = df[df[['collection_date_validated', 'host_validated', 'country_validated']].isnull().any(axis=1)]
+		filtered_df = filtered_df[['primary_accession', 'collection_date_validated', 'host_validated', 'country_validated', 'host', 'country', 'collection_date']]
+
 		filtered_df = filtered_df.fillna("NA")
 		failed_df = filtered_df.merge(df[['primary_accession', 'host', 'collection_date']],
                    on='primary_accession',
