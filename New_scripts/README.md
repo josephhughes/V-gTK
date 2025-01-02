@@ -37,7 +37,7 @@ python AddMissingData.py -f generic/fillup_table.tsv
 python AddMissingData.py -b generic/bulk_fillup_table.tsv
 ```
 #### Format for bulk table
-| Host                          | Replaced By |
+| host                          | replaced_by |
 |-------------------------------|-------------|
 | Canis lupus familiaris brain  | Dog        |
 | bovine                        | Cow     |
