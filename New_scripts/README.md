@@ -31,3 +31,14 @@ python AddMissingData.py -f generic/fillup_table.tsv
 |----------|----------|----------|----------|
 | PP706245   | Czechia   |  Dog  | 2023 |
 
+####       OR 
+
+```shell
+python AddMissingData.py -b generic/bulk_fillup_table.tsv
+```
+#### Format for bulk table
+| Host                          | Replaced By |
+|-------------------------------|-------------|
+| Canis lupus familiaris brain  | Dog        |
+| bovine                        | Cow     |
+
