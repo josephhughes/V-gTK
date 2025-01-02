@@ -108,6 +108,15 @@ class GenBankParser:
 			content['db_xref'] = db_xref
 			content['country'] = country
 			content['host'] = host
+			
+			if ":" in country:
+				tmp_country = country.split(":")
+				content['country'] = tmp_country[0]
+				content['geo_loc'] = tmp_country[1] if len(tmp_country) > 0 else ""
+			else:
+				content['country'] = country
+				content['geo_loc'] = ""
+
 			content['collection_date'] = collection_date
 			content['segment'] = segment
 			content['serotype'] = serotype
