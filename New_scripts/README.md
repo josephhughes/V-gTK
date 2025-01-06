@@ -47,8 +47,29 @@ python AddMissingData.py -b generic/bulk_fillup_table.tsv
 python FilterAndExtractSequences.py -g tmp/AddMissingData/gB_matrix_replaced.tsv -r generic-influenza/ref_list.txt -v Y
 ```
 
-#### Example of ref list format for segmented virus
-| CY005140|H9N6                          | 1 |
-|-------------------------------|-------------|
-| CY005371|H12N5  | 1        |
-| CY067675|H7N9                        | 1     |
+#### Example of ref list file format for segmented virus
+CY005140|H9N6   1
+CY005371|H12N5  1
+CY067675|H7N9   1
+CY075051|H9N2   1
+CY079178|H3N8   1
+CY096645|H8N4   1
+
+####      OR
+```shell
+python FilterAndExtractSequences.py -g tmp/AddMissingData/gB_matrix_replaced.tsv -r generic-influenza/ref_list.txt
+```
+
+#### Example of ref list file format for non segmented virus
+AY138549
+KC193267
+KJ004416
+KM016899
+KF726853
+KF726852
+KC737850
+GU358653
+GU345748
+GU345747
+GU345746
+
