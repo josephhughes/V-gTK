@@ -1,5 +1,5 @@
 # Overview
-New scripts with class and init method for tool merging
+New scripts with class and init method
 
 ## Running the scripts
 ```shell
