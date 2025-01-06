@@ -42,3 +42,13 @@ python AddMissingData.py -b generic/bulk_fillup_table.tsv
 | Canis lupus familiaris brain  | Dog        |
 | bovine                        | Cow     |
 
+### 5. Filter and extract sequences
+```shell
+python FilterAndExtractSequences.py -g tmp/AddMissingData/gB_matrix_replaced.tsv -r generic-influenza/ref_list.txt -v Y
+```
+
+#### Example of ref list format for segmented virus
+| CY005140|H9N6                          | 1 |
+|-------------------------------|-------------|
+| CY005371|H12N5  | 1        |
+| CY067675|H7N9                        | 1     |
