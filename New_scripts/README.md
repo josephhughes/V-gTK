@@ -48,12 +48,36 @@ python FilterAndExtractSequences.py -g tmp/AddMissingData/gB_matrix_replaced.tsv
 ```
 
 #### Example of ref list file format for segmented virus
-CY005140|H9N6   1
-CY005371|H12N5  1
-CY067675|H7N9   1
-CY075051|H9N2   1
-CY079178|H3N8   1
-CY096645|H8N4   1
+<table>
+    <tbody>
+        <tr>
+            <td>CY005140|H9N6</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>CY005371|H12N5</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>CY067675|H7N9</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>CY075051|H9N2</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>CY079178|H3N8</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>CY096645|H8N4</td>
+            <td>1</td>
+        </tr>
+    </tbody>
+</table>
+
+
 
 ####      OR
 ```shell
