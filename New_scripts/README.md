@@ -85,15 +85,28 @@ python FilterAndExtractSequences.py -g tmp/AddMissingData/gB_matrix_replaced.tsv
 ```
 
 #### Example of ref list file format for non segmented virus
-AY138549
-KC193267
-KJ004416
-KM016899
-KF726853
-KF726852
-KC737850
-GU358653
-GU345748
-GU345747
-GU345746
+
+<table>
+    <tbody>
+        <tr>
+            <td>KF726852</td>
+        </tr>
+        <tr>
+            <td>KF726853</td>
+        </tr>
+        <tr>
+            <td>KM016899</td>
+        </tr>
+        <tr>
+            <td>KJ004416</td>
+        </tr>
+        <tr>
+            <td>KC193267</td>
+        </tr>
+        <tr>
+            <td>AY138549</td>
+        </tr>
+    </tbody>
+</table>
+
 
