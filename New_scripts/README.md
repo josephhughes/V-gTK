@@ -109,4 +109,16 @@ python FilterAndExtractSequences.py -g tmp/AddMissingData/gB_matrix_replaced.tsv
     </tbody>
 </table>
 
+### 6. Blast alignment
+Command for segmented viruses
+```shell
+python BlastAlignment.py -s Y -f generic-influenza/ref_list.txt
+```
+
+###         OR
+For non segmented viruses such as RABV
+```shell
+python BlastAlignment.py
+```
+
 
