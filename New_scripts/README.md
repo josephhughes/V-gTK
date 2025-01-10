@@ -121,4 +121,14 @@ For non segmented viruses such as RABV
 python BlastAlignment.py
 ```
 
+### 7. NextAlign alignment
+```shell
+python NextalignAlignment.py
+```
 
+### 8. Pad Alignment
+```shell
+python PadAlignment.py
+```
+
+### 9. 
