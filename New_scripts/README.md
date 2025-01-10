@@ -131,4 +131,12 @@ python NextalignAlignment.py
 python PadAlignment.py
 ```
 
-### 9. 
+### 9. Generate table
+```shell
+python GenerateTable.py
+```
+
+### 10. Create SQlite DB
+```shell
+python CreateSqliteDB.py
+```
