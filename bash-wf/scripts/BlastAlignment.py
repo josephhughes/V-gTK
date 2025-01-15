@@ -91,7 +91,7 @@ class BlastAlignment:
 
 	def process_non_segmented_virus(self):
 		input_file = join(self.tmp_dir, "query_tophits.tsv")
-		query_tophit_uniq = join(self.tmp_dir, "query_tophits_uniq.tsv")
+		query_tophit_uniq = join(self.tmp_dir, "query_uniq_tophits.tsv")
 		grouped_fasta = join(self.tmp_dir, "grouped_fasta")
 		sorted_fasta = join(self.tmp_dir, "sorted_fasta")
 		merged_fasta = join(self.tmp_dir, "merged_fasta")
