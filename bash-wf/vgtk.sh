@@ -4,7 +4,7 @@ TAX_ID=${1:-575913}
 scripts_dir="$(dirname "$0")/scripts"
 generic_dir="$(dirname "$0")/generic"
 db_name="torno-gdb.db"
-skip_fill=${2:-false}  # Use this variable to control skipping AddMissingData.py
+skip_fill=${2:-true}  # Use this variable to control skipping AddMissingData.py
 
 # python GenBankFetcher.py
 python "${scripts_dir}/GenBankFetcher.py" -t "$TAX_ID"
