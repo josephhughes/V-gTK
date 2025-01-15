@@ -4,7 +4,7 @@ Before running pleaase make sure that the reference list is created, refer [READ
 
 Settings for running the script, make the changes accordingly to the vgtk.sh script
 ```
-TAX_ID=${1:-1980419} #segmented virus, hdv, hepatitis d virus
+TAX_ID=${1:-1980419}                     #segmented virus, hdv, hepatitis d virus
 
 scripts_dir="$(dirname "$0")/scripts"    # default, no modifications required 
 generic_dir="$(dirname "$0")/generic"    # default, no modifications required
