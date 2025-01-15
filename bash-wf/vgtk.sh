@@ -1,10 +1,14 @@
 #!/bin/bash
 
-TAX_ID=${1:-575913}
+#TAX_ID=${1:-575913} #non segmented virus, tornovirus
+TAX_ID=${1:-1980419} #segmented virus, hdv, hepatitis d virus
+
 scripts_dir="$(dirname "$0")/scripts"
 generic_dir="$(dirname "$0")/generic"
-db_name="torno-gdb.db"
+db_name="torno.db"
 skip_fill=${2:-true}  # Use this variable to control skipping AddMissingData.py
+is_segmented=${3:-Y} #segmented virus or not Y for Yes and N for Not
+
 
 # python GenBankFetcher.py
 python "${scripts_dir}/GenBankFetcher.py" -t "$TAX_ID"
@@ -15,7 +19,7 @@ fi
 echo "GenBankFetcher.py completed successfully."
 echo ""
 
-# python GenBankParser.py
+#python GenBankParser.py
 python "${scripts_dir}/GenBankParser.py"
 if [ $? -ne 0 ]; then
   echo "Error: GenBankParser.py failed."
@@ -53,7 +57,12 @@ else
 fi
 
 #python FilterAndExtractSequences.py
-python "${scripts_dir}/FilterAndExtractSequences.py" -g "$filter_matrix_path" -r "${generic_dir}/ref_list.txt"
+if [ "$is_segmented" = "Y" ]; then
+  python "${scripts_dir}/FilterAndExtractSequences.py" -g "$filter_matrix_path" -r "${generic_dir}/ref_list.txt" -v "$is_segmented"
+else
+  python "${scripts_dir}/FilterAndExtractSequences.py" -g "$filter_matrix_path" -r "${generic_dir}/ref_list.txt"
+fi
+
 if [ $? -ne 0 ]; then
   echo "Error: FilterAndExtractSequences.py failed."
   exit 1
@@ -62,7 +71,12 @@ echo "FilterAndExtractSequences.py completed successfully."
 echo ""
 
 # python BlastAlignment.py
-python "${scripts_dir}/BlastAlignment.py" -f "${generic_dir}/ref_list.txt"
+if [ "$is_segmented" = "Y" ]; then
+	python "${scripts_dir}/BlastAlignment.py" -s Y -f "${generic_dir}/ref_list.txt"
+else
+	python "${scripts_dir}/BlastAlignment.py" -f "${generic_dir}/ref_list.txt"
+fi
+
 if [ $? -ne 0 ]; then
   echo "Error: BlastAlignment.py failed."
   exit 1
