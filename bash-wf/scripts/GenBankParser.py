@@ -27,7 +27,7 @@ class GenBankParser:
 			content = {}
 			content['locus'] = gbseq.find('GBSeq_locus').text
 			content['length'] = gbseq.find('GBSeq_length').text
-			content['strandedness'] = gbseq.find('GBSeq_strandedness').text
+			content['strandedness'] = gbseq.find('GBSeq_strandedness').text if gbseq.find('GBSeq_strandedness') is not None else None
 			content['molecule_type'] = gbseq.find('GBSeq_moltype').text
 			content['topology'] = gbseq.find('GBSeq_topology').text
 			content['division'] = gbseq.find('GBSeq_division').text
