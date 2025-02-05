@@ -1,5 +1,8 @@
+#python blastAlignment.py -s Y -f generic-influenza/ref_list.txt
+
 import os
 import csv
+import shutil
 import subprocess
 from os.path import join
 from argparse import ArgumentParser
@@ -27,6 +30,32 @@ class BlastAlignment:
 		except FileNotFoundError:
 			print(f"{command} is not found on the system.")
 			return False
+	
+	@staticmethod
+	def delete_directory(dir_path):
+		if os.path.exists(dir_path):
+			if os.path.isdir(dir_path):
+				shutil.rmtree(dir_path) 
+				print(f"Directory '{dir_path}' has been deleted. Ignore the message")
+			else:
+				print(f"'{dir_path}' exists but is not a directory. Ignore the message")
+		else:
+			print(f"Directory '{dir_path}' does not exist. Ignore the message")
+
+	@staticmethod
+	def ref_segments(query_tophits_annotated):
+		segment_dict = {}
+		for each_line in open(query_tophits_annotated):
+			query, ref, score, strand, segment = each_line.strip().split('\t')
+			if segment not in segment_dict:
+				segment_dict[segment] = {}
+        
+			if ref not in segment_dict[segment]:
+				segment_dict[segment][ref] = []
+        
+			segment_dict[segment][ref].append(query)
+
+		return segment_dict
 
 	def run_makeblastdb(self):
 		os.makedirs(join(self.tmp_dir, 'DB'), exist_ok=True)
@@ -60,14 +89,20 @@ class BlastAlignment:
 		except subprocess.CalledProcessError as e:
 			print(f"Error running blastn: {e}")
 
-	def write_tophits(self):
+	def process_non_segmented_virus(self):
 		input_file = join(self.tmp_dir, "query_tophits.tsv")
-		query_tophit_uniq = join(self.tmp_dir, "query_tophits_uniq.tsv")
+		query_tophit_uniq = join(self.tmp_dir, "query_uniq_tophits.tsv")
 		grouped_fasta = join(self.tmp_dir, "grouped_fasta")
+		sorted_fasta = join(self.tmp_dir, "sorted_fasta")
+		merged_fasta = join(self.tmp_dir, "merged_fasta")
+		sorted_all = join(self.tmp_dir, "sorted_all")		
 		ref_seq_dir = join(self.tmp_dir, "ref_seqs")
 
 		os.makedirs(grouped_fasta, exist_ok=True)
 		os.makedirs(ref_seq_dir, exist_ok=True)
+		os.makedirs(sorted_fasta, exist_ok=True)
+		os.makedirs(merged_fasta, exist_ok=True)
+		os.makedirs(sorted_all, exist_ok=True)
 
 		records = {}
 		values = {}
@@ -90,13 +125,47 @@ class BlastAlignment:
 			for record in records.values():
 				writer.writerow(record)
 	
-		'''	
-		grouped_dict = {}
+		seq_dicts = {}
+		query_seqs = read_file.fasta(self.query_fasta)
+		for rows in query_seqs:
+			seq_dicts[rows[0].strip()] = rows[1].strip()
+
+		#Seperate plus and minus strand sequences
 		for each_line in open(query_tophit_uniq, 'r'):
 			query_acc, ref_acc, identity, strand = each_line.strip().split('\t')
-			grouped_dict.setdefault(ref_acc, []).append(query_acc)
-			seq_dicts = {rows[0].strip(): rows[1].strip() for rows in read_file.fasta(self.query_fasta)}
-		'''
+			if strand == "plus":
+				with open(join(sorted_fasta, "plus.fa"), 'a') as file_plus:
+					file_plus.write(">" + query_acc + "\n" + seq_dicts[query_acc] + "\n")
+			else:
+				with open(join(sorted_fasta, "minus.fa"), 'a') as file_minus:
+					file_minus.write(">" + query_acc + "\n" + seq_dicts[query_acc] + "\n")
+
+		for each_file in os.listdir(sorted_fasta):
+			if "minus" in each_file:
+				command = ["seqkit", "seq", "-r", "-p", "-v", "-t", "dna", join(sorted_fasta, each_file), ">", join(merged_fasta, each_file)]
+			else:
+				command = ["cp", join(sorted_fasta, each_file), join(merged_fasta, each_file)]
+
+			try:
+				print(' '.join(command))
+				os.system(' '.join(command))
+				print(f"seqkit ran successfully for {each_file}")
+			except subprocess.CalledProcessError as e:
+				print(f"Error running seqkit: {e}")
+
+		file_list = []
+		for each_file in os.listdir(merged_fasta):
+			prefix = merged_fasta + "/"
+			file_list.append(prefix + each_file)
+		
+		command = ["cat", " ".join(file_list), ">", join(sorted_all, "query_seq.fa")]
+		print(' '.join(command))
+		try:
+			os.system(' '.join(command))
+			print(f"concatenation sucessful")
+		except subprocess.CalledProcessError as e:
+			print(f"Error in concatenation: {e}")
+
 
 		grouped_dict = {}
 		for each_line in open(query_tophit_uniq, 'r'):
@@ -107,7 +176,7 @@ class BlastAlignment:
 				grouped_dict[ref_acc].append(query_acc)
 
 		seq_dicts = {}
-		query_seqs = read_file.fasta(self.query_fasta)
+		query_seqs = read_file.fasta(join(sorted_all, "query_seq.fa"))
 		for rows in query_seqs:
 			seq_dicts[rows[0].strip()] = rows[1].strip()
 
@@ -131,17 +200,23 @@ class BlastAlignment:
 				for i in range(0, len(seqs), 80):
 					write_file.write(seqs[i:i + 80] + '\n')
 			
-		
 	def process_segment_virus(self, input_file, uniq_hit_output, segment_file, annotated_output):
 		uniq_hits = {}
 		segments = {}
 		segment_assigned = {}
+		seg_dict = {}
 
+		os.makedirs(join(self.tmp_dir, "grouped_fasta"), exist_ok=True)
 		os.makedirs(join(self.tmp_dir, "segment_sorted"), exist_ok=True)
 		os.makedirs(join(self.tmp_dir, "segment_merged_fasta"), exist_ok=True)
+		os.makedirs(join(self.tmp_dir, "segment_sorted_all"), exist_ok=True)
+		os.makedirs(join(self.tmp_dir, "ref_seqs"), exist_ok=True)
 
 		segment_sorted = join(self.tmp_dir, "segment_sorted")
 		segment_merged = join(self.tmp_dir, "segment_merged_fasta")
+		segment_sorted_all =join(self.tmp_dir, "segment_sorted_all")
+		grouped_fasta = join(self.tmp_dir, "grouped_fasta")
+		ref_seqs = join(self.tmp_dir, "ref_seqs")
 
 		with open(input_file, newline='') as file:
 			reader = csv.reader(file, delimiter='\t')
@@ -150,15 +225,17 @@ class BlastAlignment:
 				if col1 in uniq_hits:
 					if float(col3) > float(uniq_hits[col1][2]):
 						uniq_hits[col1] = [col1, col2, col3, col4]
-					else:
-						uniq_hits[col1] = [col1, col2, col3, col4]
+				else:
+					uniq_hits[col1] = [col1, col2, col3, col4]
 
 		with open(uniq_hit_output, 'w') as write_uniq_hits:
 			for k, v in uniq_hits.items():
 				write_uniq_hits.write('\t'.join(v) + '\n')
-				for line in open(segment_file):
-					accession, segment = line.strip().split('\t')
-					segments[accession] = segment
+		
+		for line in open(segment_file):
+				accession, segment = line.strip().split('\t')
+				accession = accession.split('|')[0]
+				segments[accession] = segment
 
 		with open(annotated_output, 'w') as write_segment:
 			with open(uniq_hit_output, newline='') as file:
@@ -181,27 +258,77 @@ class BlastAlignment:
 				accession, reference, score, strand, segment = segment_assigned[header]
 				if strand == "plus":
 					with open(join(segment_sorted, f"seg_{segment}_plus.fa"), 'a') as write_file:
-						write_file.write(f">{header}\n{sequence}\n")
+							write_file.write(f">{header}\n{sequence}\n")
 				else:
 						with open(join(segment_sorted, f"seg_{segment}_minus.fa"), 'a') as write_file:
 							write_file.write(f">{header}\n{sequence}\n")
-
+					
 		for each_seg in os.listdir(segment_sorted):
 			name, seg_num, strand = each_seg.split('.')[0].split('_')
 			print(f"Processing {name}-{strand}")
-			if strand == "plus":
-				command = ["seqkit", "grep", "-n", "-f", join(segment_sorted, each_seg), ">>", join(segment_merged, each_seg)]
+			if strand == "minus":
+				command = ["seqkit", "seq", "-r", "-p", "-v", "-t", "dna", join(segment_sorted, each_seg), ">", join(segment_merged, each_seg)]
 			else:
-				command = ["seqkit", "seq", "-r", "-p", "-v", "-t", "dna", join(segment_sorted, each_seg), ">>", join(segment_merged, each_seg)]
+				command = ["cp", join(segment_sorted, each_seg), join(segment_merged, each_seg)]
 
+			try:
+				print(' '.join(command))
+				os.system(' '.join(command))
+				print(f"seqkit ran successfully for {each_seg}")
+			except subprocess.CalledProcessError as e:
+				print(f"Error running seqkit: {e}")
+
+		for each_seg in os.listdir(segment_merged):
+			name, seg_num, strand = each_seg.split('.')[0].split('_')
+			if name + "_" + seg_num not in seg_dict:
+				seg_dict[name + "_" + seg_num] = [each_seg] 
+			else:
+				seg_dict[name + "_" + seg_num].append(each_seg)
+
+		for each_segment, files in seg_dict.items():
+			prefix = segment_merged + "/"
+			output_file = join(segment_sorted_all, each_segment + ".fa")
+			file_list = [prefix + item for item in files]
+			command = ["cat", " ".join(file_list), ">", output_file]
+			print(' '.join(command))
+			try:
+				os.system(' '.join(command))
+				print(f"{each_segment} concatenated sucessfully")
+			except subprocess.CalledProcessError as e:
+				print(f"Error in concatenation: {e}")
+
+		segment_dictionary = self.ref_segments(join(self.tmp_dir, "query_uniq_tophit_annotated.tsv"))
+		for segment, ref_acc in segment_dictionary.items():
+
+			seq_dict = {}
+			segment_fa = read_file.fasta(join(segment_sorted_all, f'seg_{segment}.fa'))
+			for header, sequence in segment_fa:
+				seq_dict[header] = sequence
+			print(f"loaded seg_{segment}.fa")
+
+			for each_ref_acc, query_acc in ref_acc.items():
+				write_file = open(join(grouped_fasta, each_ref_acc + ".fa"), 'w')
+				for each_query in query_acc:
+						write_file.write(">" + each_query + "\n" + seq_dict[each_query] + "\n")
+				write_file.close()
+
+		reference_seqs = read_file.fasta(self.db_fasta)
+	
+		for header, sequence in reference_seqs:
+			write_file = open(join(ref_seqs, header + ".fa"), "w")
+			write_file.write(">" + header + "\n" + sequence + "\n")
+			write_file.close()
 
 	def process(self):
 		if self.is_segmented_virus == 'Y' and not self.segment_file:
-			raise ValueError("Segment file is required for segmented viruses.")
+			raise ValueError("Segment file containing accession and segment information is required to process segmented viruses.")
 
 		if self.is_segmented_virus == 'Y':
 			self.run_makeblastdb()
 			self.run_blastn()
+			for each_segment_dir in [join(self.tmp_dir, "segment_sorted"), join(self.tmp_dir, "segment_sorted_all"), join(self.tmp_dir, "segment_merged_fasta")]:
+				self.delete_directory(each_segment_dir)
+
 			self.process_segment_virus(
 				join(self.tmp_dir, "query_tophits.tsv"),
 				join(self.tmp_dir, "query_uniq_tophits.tsv"),
@@ -212,7 +339,7 @@ class BlastAlignment:
 			self.check_blast_exists("blastn")
 			self.run_makeblastdb()
 			self.run_blastn()
-			self.write_tophits()
+			self.process_non_segmented_virus()
 
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Performs the BLAST alignment of query sequences against the given reference sequences')
@@ -233,4 +360,3 @@ if __name__ == "__main__":
 		args.segment_file
 		)
 	processor.process()
-

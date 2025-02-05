@@ -26,6 +26,7 @@ class NextalignAlignment:
 			'--input-ref', ref_acc_path,
 			'--output-all', join(self.tmp_dir, f'{accession}'),
 			'--output-basename', f'{accession}',
+			'--include-reference',
 			query_acc_path
 		]
         

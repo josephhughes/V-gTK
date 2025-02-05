@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 genbank_divisions = ['VRL', 'PAT', 'SYN', 'ENV']
 
 class FilterAndExtractSequences:
-	def __init__(self, genbank_matrix, genbank_matrix_filtered, ref_file, tmp_dir, total_length, real_length, prop_ambigious, gb_division, seq_type):
+	def __init__(self, genbank_matrix, genbank_matrix_filtered, ref_file, tmp_dir, total_length, real_length, prop_ambigious, segmented_virus, gb_division, seq_type):
 		self.genbank_matrix = genbank_matrix
 		self.genbank_matrix_filtered = genbank_matrix_filtered
 		self.ref_file = ref_file
@@ -14,6 +14,7 @@ class FilterAndExtractSequences:
 		self.total_length = total_length
 		self.real_length = real_length
 		self.prop_ambigious = prop_ambigious
+		self.segmented_virus = segmented_virus
 		self.gb_division = gb_division
 		self.seq_type = seq_type
 		os.makedirs(self.tmp_dir, exist_ok=True)
@@ -23,6 +24,14 @@ class FilterAndExtractSequences:
 		with open(self.ref_file) as f:
 			for each_ref in f:
 				ref_list.append(each_ref.strip())
+		return ref_list
+
+	def read_ref_list_segmented_virus(self):
+		ref_list = []
+		with open(self.ref_file) as f:
+			for each_ref_line in f:
+				split_ref_line = each_ref_line.split("|")
+				ref_list.append(split_ref_line[0])
 		return ref_list
 
 	def check_gb_division(self):
@@ -37,8 +46,11 @@ class FilterAndExtractSequences:
 		if not self.check_gb_division():
 			print("Error: Invalid GenBank division specified.")
 			return
-
-		ref_list = self.read_ref_list()
+	
+		if self.segmented_virus == "Y":
+			ref_list = self.read_ref_list_segmented_virus()
+		else:
+			ref_list = self.read_ref_list()
 
 		query_seq_file = join(self.tmp_dir, 'query_seq.fa')
 		ref_seq_file = join(self.tmp_dir, 'ref_seq.fa')
@@ -68,6 +80,8 @@ class FilterAndExtractSequences:
 						else:
 							write_query_seq.write(f">{accession}\n{sequence}\n")
 
+	#def filter_columns_segmented_virus():
+			
 	def process(self):
 		self.filter_columns()
 
@@ -80,6 +94,7 @@ if __name__ == "__main__":
 	parser.add_argument('-l', '--total_length', help='Total length of the sequence should be more or equal to the length provided', default=1, type=int)
 	parser.add_argument('-n', '--real_length', help='Length of sequences without N', default=1, type=int)
 	parser.add_argument('-a', '--prop_ambigious_data', help='Proportion of ambiguous data to be excluded.', nargs='+', default=None, type=str)
+	parser.add_argument('-v', '--segmented_virus', help='Is segmented virus', default="N")
 	parser.add_argument(
 		'-d', '--genbank_division',
 		help=(
@@ -104,6 +119,7 @@ if __name__ == "__main__":
 		total_length=args.total_length,
 		real_length=args.real_length,
 		prop_ambigious=args.prop_ambigious_data,
+		segmented_virus=args.segmented_virus,
 		gb_division=args.genbank_division,
 		seq_type=args.seq_type
 	)

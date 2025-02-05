@@ -27,7 +27,7 @@ class GenBankParser:
 			content = {}
 			content['locus'] = gbseq.find('GBSeq_locus').text
 			content['length'] = gbseq.find('GBSeq_length').text
-			content['strandedness'] = gbseq.find('GBSeq_strandedness').text
+			content['strandedness'] = gbseq.find('GBSeq_strandedness').text if gbseq.find('GBSeq_strandedness') is not None else None
 			content['molecule_type'] = gbseq.find('GBSeq_moltype').text
 			content['topology'] = gbseq.find('GBSeq_topology').text
 			content['division'] = gbseq.find('GBSeq_division').text
@@ -106,8 +106,6 @@ class GenBankParser:
 			content['isolate'] = isolate
 			content['isolation_source'] = isolation_source
 			content['db_xref'] = db_xref
-			content['country'] = country
-			content['host'] = host
 			
 			if ":" in country:
 				tmp_country = country.split(":")
@@ -116,7 +114,8 @@ class GenBankParser:
 			else:
 				content['country'] = country
 				content['geo_loc'] = ""
-
+		
+			content['host'] = host
 			content['collection_date'] = collection_date
 			content['segment'] = segment
 			content['serotype'] = serotype

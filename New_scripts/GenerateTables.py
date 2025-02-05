@@ -130,7 +130,7 @@ if __name__ == "__main__":
 	parser = ArgumentParser(description='Creating sqlite DB')
 	parser.add_argument('-g', '--genbank_matrix', help='Genbank matrix table', default="tmp/GenBank-matrix/gB_matrix.tsv")
 	parser.add_argument('-t', '--tmp_dir', help='tmp directory to store all the db-ready tsv files', default="tmp/Tables/")
-	parser.add_argument('-b', '--blast_hits', help='BLASTN unique hits', default="tmp/Blast/query_tophits_uniq.tsv")
+	parser.add_argument('-b', '--blast_hits', help='BLASTN unique hits', default="tmp/Blast/query_uniq_tophits.tsv")
 	parser.add_argument('-p', '--pad_aln', help='Padded alignment file', default="tmp/Pad-Alignment/paded-alignment.fa")
 	args = parser.parse_args()
 
