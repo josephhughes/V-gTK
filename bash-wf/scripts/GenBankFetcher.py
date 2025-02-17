@@ -74,10 +74,10 @@ class GenBankFetcher:
 	def update(self, update_file):
 		with open(update_file, 'r') as file:
 			reader = csv.DictReader(file, delimiter='\t')
-			if 'Accession Version' not in reader.fieldnames:
-					raise ValueError("Expecting a column called 'Accession Version'")
-			accession_versions = [row['Accession Version'] for row in reader]
-			print(f"Found {len(accession_versions)} Accession Versions")
+			if 'accession_version' not in reader.fieldnames:
+					raise ValueError("Expecting a column called 'accession_version'")
+			accession_versions = [row['accession_version'] for row in reader]
+			print(f"Found {len(accession_versions)} accession_versions")
 			ids = self.fetch_accs()
 			missing_ids = [id for id in ids if id not in accession_versions]
 			print(f"Found {len(missing_ids)} missing IDs")
