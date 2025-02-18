@@ -4,18 +4,20 @@ import os
 import csv
 import shutil
 import subprocess
+from Bio import SeqIO
 from os.path import join
 from argparse import ArgumentParser
 import read_file
 
 class BlastAlignment:
-	def __init__(self, query_fasta, db_fasta, tmp_dir, output_file, is_segmented_virus, segment_file=None):
+	def __init__(self, query_fasta, db_fasta, tmp_dir, output_file, is_segmented_virus,master_acc, segment_file=None):
 		self.query_fasta = query_fasta
 		self.db_fasta = db_fasta
 		self.tmp_dir = tmp_dir
 		self.output_file = output_file
 		self.is_segmented_virus = is_segmented_virus
 		self.segment_file = segment_file
+		self.master_acc = master_acc
 		self.db_file_name = os.path.basename(db_fasta)
 
 	@staticmethod
@@ -89,6 +91,19 @@ class BlastAlignment:
 		except subprocess.CalledProcessError as e:
 			print(f"Error running blastn: {e}")
 
+	def write_master_seq(self, output_dir):
+		with open(self.db_fasta, "r") as infile:
+			records = SeqIO.parse(infile, "fasta")
+			selected_records = [record for record in records if record.id == self.master_acc]
+			
+		if selected_records:
+			with open(join(output_dir, self.master_acc + '.fasta'), "w") as outfile:
+				SeqIO.write(selected_records, outfile, "fasta")
+				print(f"Sequence '{self.master_acc}' has been saved to {join(output_dir, self.master_acc)}")
+		else:
+			print(f"Sequence ID '{self.master_acc}' not found in {self.db_fasta}")
+			# add close script here
+
 	def process_non_segmented_virus(self):
 		input_file = join(self.tmp_dir, "query_tophits.tsv")
 		query_tophit_uniq = join(self.tmp_dir, "query_uniq_tophits.tsv")
@@ -97,15 +112,19 @@ class BlastAlignment:
 		merged_fasta = join(self.tmp_dir, "merged_fasta")
 		sorted_all = join(self.tmp_dir, "sorted_all")		
 		ref_seq_dir = join(self.tmp_dir, "ref_seqs")
+		master_seq = join(self.tmp_dir, "master_seq")
 
 		os.makedirs(grouped_fasta, exist_ok=True)
 		os.makedirs(ref_seq_dir, exist_ok=True)
 		os.makedirs(sorted_fasta, exist_ok=True)
 		os.makedirs(merged_fasta, exist_ok=True)
 		os.makedirs(sorted_all, exist_ok=True)
+		os.makedirs(master_seq, exist_ok=True)
 
 		records = {}
 		values = {}
+
+		self.write_master_seq(master_seq)
 	
 		with open(input_file, newline='') as file:
 			reader = csv.reader(file, delimiter='\t')
@@ -211,12 +230,16 @@ class BlastAlignment:
 		os.makedirs(join(self.tmp_dir, "segment_merged_fasta"), exist_ok=True)
 		os.makedirs(join(self.tmp_dir, "segment_sorted_all"), exist_ok=True)
 		os.makedirs(join(self.tmp_dir, "ref_seqs"), exist_ok=True)
+		os.makedirs(join(self.tmp_dir, "master_seq"), exist_ok=True)
 
 		segment_sorted = join(self.tmp_dir, "segment_sorted")
 		segment_merged = join(self.tmp_dir, "segment_merged_fasta")
 		segment_sorted_all =join(self.tmp_dir, "segment_sorted_all")
 		grouped_fasta = join(self.tmp_dir, "grouped_fasta")
 		ref_seqs = join(self.tmp_dir, "ref_seqs")
+		master_seq = join(self.tmp_dir, "master_seq")
+		
+		self.write_master_file(self, master_seq)
 
 		with open(input_file, newline='') as file:
 			reader = csv.reader(file, delimiter='\t')
@@ -349,6 +372,7 @@ if __name__ == "__main__":
 	parser.add_argument('-o', '--output_file', help='output file', default='query_tophits.tsv')
 	parser.add_argument('-s', '--is_segmented_virus', help='Type Y for segmented virus else N', default='N')
 	parser.add_argument('-f', '--segment_file', help='File containing information about the segments')
+	parser.add_argument('-m', '--master_acc', help='Master accession. Example Rabies Virus uses NC_001542 as master reference', required=True)
 	args = parser.parse_args()
 
 	processor = BlastAlignment(
@@ -357,6 +381,7 @@ if __name__ == "__main__":
 		args.tmp_dir,
 		args.output_file,
 		args.is_segmented_virus,
+		args.master_acc,
 		args.segment_file
 		)
 	processor.process()

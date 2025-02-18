@@ -113,6 +113,7 @@ class ValidateMatrix:
         df['collection_date_validated'] = df['collection_date'].apply(self.validate_date)
         df['country_validated'] = df['country'].apply(lambda x: self.validate_country(x, country_dict))
         df['host_validated'] = df['host'].apply(lambda x: self.validate_host(x, taxa_dict))
+        df['host_taxa_id'] = df['host'].apply(lambda x: taxa_dict.get(x, ['NA'])[0])
         
         failed_df = df[df[['collection_date_validated', 'host_validated', 'country_validated']].isnull().any(axis=1)]
         failed_df = failed_df[['primary_accession', 'collection_date_validated', 'host_validated', 'country_validated']]

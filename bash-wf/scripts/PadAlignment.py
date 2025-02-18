@@ -16,7 +16,7 @@ class PadAlignmentSequences:
 	def insert_gaps(reference_aligned, subalignment_seqs):
 		ref_with_gaps_list = list(reference_aligned)
 		updated_sequences = []
-        
+		seq_id = [] 
 		for seq_record in subalignment_seqs:
 			sequence = list(str(seq_record.seq))
 			gapped_sequence = []
@@ -32,8 +32,9 @@ class PadAlignmentSequences:
 
 			gapped_seq_str = ''.join(gapped_sequence)
 			seq_record.seq = Seq(gapped_seq_str)
-			updated_sequences.append(seq_record)
-        
+			if seq_record.id not in seq_id:
+				updated_sequences.append(seq_record)
+				seq_id.append(seq_record.id)
 		return updated_sequences
 
 	def process_master_alignment(self, reference_alignment_file):
@@ -84,9 +85,9 @@ class PadAlignmentSequences:
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Insert gaps from master alignment into corresponding subalignments.")
 	parser.add_argument("-r", "--reference_sequence", default="tmp/Sequences/ref_seq.fa", help="FASTA file containing reference sequences")
-	parser.add_argument("-i", "--input_dir", default="tmp/Nextalign", help="Directory containing Nextalign output alignments for each reference sequences.")
+	parser.add_argument("-i", "--input_dir", default="tmp/Nextalign/query_aln", help="Directory containing Nextalign output alignments for each reference sequences.")
 	parser.add_argument("-o", "--tmp_dir", default="tmp/Pad-Alignment", help="Directory to save padded subalignments and merged files.")
-	parser.add_argument("-f", "--output_file", default="paded-alignment.fa", help="Output file name to store paded alignment file")
+	parser.add_argument("-f", "--output_file", default="paded-query-alignment.fa", help="Output file name to store paded alignment file")
 	parser.add_argument("--keep_intermediate_files", default="N", help="Flag to keep intermediate files (padded subalignment). Default: remove")
 	args = parser.parse_args()
 	pad_aln = PadAlignmentSequences(args.reference_sequence, args.input_dir, args.tmp_dir, args.keep_intermediate_files, args.output_file)

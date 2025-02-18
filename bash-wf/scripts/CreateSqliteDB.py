@@ -11,9 +11,10 @@ from argparse import ArgumentParser
 from collections import defaultdict
 
 class CreateSqliteDB:
-	def __init__(self, meta_data, features, pad_aln, gene_info, m49_countries, m49_interm_region, m49_regions, m49_sub_regions, proj_settings, tmp_dir, db_name):
+	def __init__(self, meta_data, reference_features, query_features, pad_aln, gene_info, m49_countries, m49_interm_region, m49_regions, m49_sub_regions, proj_settings, tmp_dir, db_name):
 		self.meta_data = meta_data
-		self.features = features
+		self.reference_features = reference_features
+		self.query_features = query_features
 		self.pad_aln = pad_aln
 		self.gene_info = gene_info
 		self.m49_countries = m49_countries
@@ -26,7 +27,8 @@ class CreateSqliteDB:
 
 	def create_db(self):
 		df_meta_data = pd.read_csv(join(self.meta_data), sep="\t")
-		df_features = pd.read_csv(join(self.features), sep="\t")
+		df_reference_features = pd.read_csv(join(self.reference_features), sep="\t")
+		df_query_features = pd.read_csv(join(self.query_features), sep="\t")
 		df_aln = pd.read_csv(join(self.pad_aln), sep="\t")
 		df_gene = pd.read_csv(join(self.gene_info), sep="\t")
 		df_m49_country = pd.read_csv(join(self.m49_countries), sep=",")
@@ -39,7 +41,8 @@ class CreateSqliteDB:
 		cursor = conn.cursor()
 
 		df_meta_data.to_sql("meta_data", conn, if_exists="replace", index=False)
-		df_features.to_sql("features", conn, if_exists="replace", index=False)
+		df_reference_features.to_sql("reference_features", conn, if_exists="replace", index=False)
+		df_query_features.to_sql("query_features", conn, if_exists="replace", index=False)
 		df_aln.to_sql("sequence", conn, if_exists="replace", index=False)
 		df_gene.to_sql("genes", conn, if_exists="replace", index=False)
 		df_m49_country.to_sql("m49_country", conn, if_exists="replace", index=False)
@@ -50,7 +53,8 @@ class CreateSqliteDB:
 		cursor.execute("PRAGMA foreign_keys = ON;")
 
 		cursor.execute("""CREATE TABLE IF NOT EXISTS meta_data AS SELECT * FROM meta_data;""")
-		cursor.execute("""CREATE TABLE IF NOT EXISTS features AS SELECT * FROM features;""")
+		cursor.execute("""CREATE TABLE IF NOT EXISTS reference_features AS SELECT * FROM reference_features;""")
+		cursor.execute("""CREATE TABLE IF NOT EXISTS query_features AS SELECT * FROM query_features;""")
 		cursor.execute("""CREATE TABLE IF NOT EXISTS sequence AS SELECT * FROM sequence;""")
 		cursor.execute("""CREATE TABLE IF NOT EXISTS genes AS SELECT * FROM genes;""")
 		cursor.execute("""CREATE TABLE IF NOT EXISTS m49_country AS SELECT * FROM m49_country;""")
@@ -65,7 +69,8 @@ class CreateSqliteDB:
 def process(args):
 	db_creator = CreateSqliteDB(
 			args.meta_data,
-			args.features,
+			args.reference_features,
+			args.query_features,
 			args.pad_aln,
 			args.gene_info,
 			args.m49_countries,
@@ -83,7 +88,8 @@ if __name__ == "__main__":
 	parser = ArgumentParser(description='Creating sqlite DB')
 	parser.add_argument('-m', '--meta_data', help='Meta data table', default="tmp/GenBank-matrix/gB_matrix.tsv")
 	parser.add_argument('-t', '--tmp_dir', help='tmp directory to store all the db-ready tsv files', default="tmp/sqliteDB/")
-	parser.add_argument('-f', '--features', help='Features table', default="tmp/Tables/features.tsv")
+	parser.add_argument('-rf', '--reference_features', help='Reference features table', default="tmp/Tables/reference-features.tsv")
+	parser.add_argument('-qf', '--query_features', help='Query feature table', default="tmp/Tables/query-features.tsv")
 	parser.add_argument('-p', '--pad_aln', help='Padded alignment file', default="tmp/Tables/sequence.tsv")
 	parser.add_argument('-g', '--gene_info', help='Gene table', default="generic/Tables/gene_info.csv")
 	parser.add_argument('-mc', '--m49_countries', help='M49 countries', default="generic/Tables/m49_country.csv")
