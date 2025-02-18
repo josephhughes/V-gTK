@@ -1,22 +1,33 @@
 #!/bin/bash
 
 #TAX_ID=${1:-575913} #non segmented virus, tornovirus
-TAX_ID=${1:-1980419} #segmented virus, hdv, hepatitis d virus
+#TAX_ID=${1:-1980419} #segmented virus, hdv, hepatitis d virus
+#TAX_ID=${1:-3052230} # HCV
+TAX_ID=${1:-11292} # RABV
 
-scripts_dir="$(dirname "$0")/scripts" # default, no modifications required 
-generic_dir="$(dirname "$0")/generic" # default, no modifications required
-db_name="torno.db" # change as per virus name
+scripts_dir="$(dirname "$0")/scripts"
+generic_dir="$(dirname "$0")/generic"
+db_name="rabv-rgd-test.db"
 skip_fill=${2:-true}  # Use this variable to control skipping AddMissingData.py
-is_segmented=${3:-Y} #segmented virus or not Y for Yes and N for Not
+is_segmented=${3:-N} #segmented virus or not Y for Yes and N for Not
+master_acc="NC_001542"
 
-
-# python GenBankFetcher.py
+#python GenBankFetcher.py
 python "${scripts_dir}/GenBankFetcher.py" -t "$TAX_ID"
 if [ $? -ne 0 ]; then
   echo "Error: GenBankFetcher.py failed."
   exit 1
 fi
 echo "GenBankFetcher.py completed successfully."
+echo ""
+
+#python DownloadGFF.py
+python "${scripts_dir}/DownloadGFF.py" -id $master_acc
+if [ $? -ne 0 ]; then
+  echo "Error: DownloadGFF.py failed."
+  exit 1
+fi
+echo "DownloadGFF.py completed successfully."
 echo ""
 
 #python GenBankParser.py
@@ -70,11 +81,11 @@ fi
 echo "FilterAndExtractSequences.py completed successfully."
 echo ""
 
-# python BlastAlignment.py
+#python BlastAlignment.py
 if [ "$is_segmented" = "Y" ]; then
-	python "${scripts_dir}/BlastAlignment.py" -s Y -f "${generic_dir}/ref_list.txt"
+	python "${scripts_dir}/BlastAlignment.py" -s Y -f "${generic_dir}/ref_list.txt" -m ${master_acc}
 else
-	python "${scripts_dir}/BlastAlignment.py" -f "${generic_dir}/ref_list.txt"
+	python "${scripts_dir}/BlastAlignment.py" -f "${generic_dir}/ref_list.txt" -m ${master_acc}
 fi
 
 if [ $? -ne 0 ]; then
@@ -85,7 +96,7 @@ echo "BlastAlignment.py completed successfully."
 echo ""
 
 # python NextalignAlignment.py
-python "${scripts_dir}/NextalignAlignment.py"
+python "${scripts_dir}/NextalignAlignment.py" -m $master_acc
 if [ $? -ne 0 ]; then
   echo "Error: NextalignAlignment.py failed."
   exit 1
@@ -99,7 +110,24 @@ if [ $? -ne 0 ]; then
   echo "Error: PadAlignment.py failed."
   exit 1
 fi
-echo "PadAlignment.py completed successfully."
+echo "PadAlignment.py for query sequence is completed successfully."
+echo ""
+
+python "${scripts_dir}/PadAlignment.py" -r "tmp/Blast/master_seq/${master_acc}.fasta" -i "tmp/Nextalign/reference_aln/" -f "paded-reference-alignment.fa"  
+if [ $? -ne 0 ]; then
+  echo "Error: PadAlignment.py failed."
+  exit 1
+fi
+echo "PadAlignment.py for reference sequence completed successfully."
+echo ""
+
+# python SoftwareVersion.py
+python "${scripts_dir}/SoftwareVersion.py"
+if [ $? -ne 0 ]; then
+  echo "Error: SoftwareVersion.py failed."
+  exit 1
+fi
+echo "SoftwareVersion.py completed successfully."
 echo ""
 
 # python GenerateTables.py
@@ -119,4 +147,3 @@ if [ $? -ne 0 ]; then
 fi
 echo "CreateSqliteDB.py completed successfully."
 echo ""
-
