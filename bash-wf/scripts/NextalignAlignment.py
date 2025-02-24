@@ -1,25 +1,29 @@
 import os
+import read_file
 from Bio import SeqIO
 from os.path import join
 from argparse import ArgumentParser
+from FeatureCalculator import FeatureCordCalculator
 
 class NextalignAlignment:
-	def __init__(self, query_dir, ref_dir, tmp_dir, ref_fa_file, master_seq_dir, master_ref):
+	def __init__(self, query_dir, ref_dir, tmp_dir, ref_fa_file, master_seq_dir, master_ref, table_dir, gaps_to_ignore):
 		self.query_dir = query_dir
 		self.ref_dir = ref_dir
 		self.ref_fa_file = ref_fa_file
 		self.master_seq_dir = master_seq_dir
 		self.master_ref = master_ref
 		self.tmp_dir = tmp_dir
+		self.table_dir = table_dir
+		self.gaps_to_ignore = gaps_to_ignore
 		self.min_seed = "44"
 		self.seed_spacing = "50"
 		self.min_match_rate = "0.1"
-
+		self.feature_cord_calc = FeatureCordCalculator()
+	
 	@staticmethod
 	def path_to_basename(file_path):
 		path = os.path.basename(file_path)
 		return path.split('.')[0]
-
 
 	def nextalign_master(self, query_acc_path, ref_acc_path, query_aln_op):
 		accession = self.path_to_basename(ref_acc_path)
@@ -67,10 +71,30 @@ class NextalignAlignment:
 		else:
 			print(f"{accession} failed with return code {return_code}")
 
+	def master_feature_table(self, reference_aln_file):
+		os.makedirs(self.table_dir, exist_ok=True)
+		seq_obj = read_file.fasta(reference_aln_file)
+		write_file = open(join(self.table_dir, "reference_features.tsv"), 'w')
+		header = ['accession', 'aln_start', 'aln_end']
+		write_file.write('\t'.join(header))
+		write_file.write('\n')
+
+		for rows in seq_obj:
+			header = rows[0]
+			seq = rows[1]
+			seq_cords = self.feature_cord_calc.calculate_alignment_coords(header,seq,self.gaps_to_ignore)['aligned']
+			#if header == "JQ685926": print(seq_cords, seq) 
+			for each_cord_pair in seq_cords:
+				data = [header, str(each_cord_pair[0]), str(each_cord_pair[1])] #, str(start), str(end)]
+				write_file.write('\t'.join(data))
+				write_file.write('\n')
+		write_file.close()
+
 	def process(self):
 		query_aln_output_dir = join(self.tmp_dir, "query_aln")
 		ref_aln_output_dir = join(self.tmp_dir, "reference_aln")
 
+			
 		#align query against reference sequence alignment
 		for each_query_file in os.listdir(self.query_dir):
 			ref_file = each_query_file
@@ -80,6 +104,7 @@ class NextalignAlignment:
 					query_aln_output_dir
 			)
 		
+		
 		#align master and reference sequence alignment
 		for each_master_ref in os.listdir(self.master_seq_dir):
 			self.nextalign_master(
@@ -87,6 +112,9 @@ class NextalignAlignment:
           join(self.master_seq_dir, each_master_ref),
 					ref_aln_output_dir 
 		)
+		
+		self.master_feature_table(join(ref_aln_output_dir, self.master_ref, self.master_ref + ".aligned.fasta"))
+	
 		
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Performs the nextalign of each sequence')
@@ -96,7 +124,9 @@ if __name__ == "__main__":
 	parser.add_argument('-ms', '--master_seq_dir', help='Master sequence directory', default="tmp/Blast/master_seq")
 	parser.add_argument('-t', '--tmp_dir', help='Temp directory to process the data', default="tmp/Nextalign")
 	parser.add_argument('-m', '--master_ref', help='Master reference accession. Generally, the Ref Seq accession. In case of Rabies it is NC_001542', required=True) 
+	parser.add_argument('-td', '--table_dir', help='Output where reference table with alignment coordinates are stored', default='tmp/Tables')
+	parser.add_argument('-g', '--gaps_to_ignore', help='Alignment gaps to ignore', default=30)
 	args = parser.parse_args()
 
-	processor = NextalignAlignment(args.query_dir, args.ref_dir, args.tmp_dir, args.ref_fa_file, args.master_seq_dir, args.master_ref)
+	processor = NextalignAlignment(args.query_dir, args.ref_dir, args.tmp_dir, args.ref_fa_file, args.master_seq_dir, args.master_ref, args.table_dir, args.gaps_to_ignore)
 	processor.process()
