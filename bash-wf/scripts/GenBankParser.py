@@ -36,6 +36,7 @@ class GenBankParser:
 			content['definition'] = gbseq.find('GBSeq_definition').text
 			content['primary_accession'] = gbseq.find('GBSeq_primary-accession').text
 			content['accession_version'] = gbseq.find('GBSeq_accession-version').text
+			content['gi_number'] = content['primary_accession']
 			content['source'] = gbseq.find('GBSeq_source').text
 			content['organism'] = gbseq.find('GBSeq_organism').text
 			content['taxonomy'] = gbseq.find('GBSeq_taxonomy').text
@@ -129,6 +130,8 @@ class GenBankParser:
 			content['g'] = nucl_count[2]
 			content['c'] = nucl_count[3]
 			content['n'] = nucl_count[4]
+			atgc_list = [int(content['a']), int(content['t']), int(content['g']), int(content['c'])]
+			content['real_length'] = sum(atgc_list)
 
 			references = []
 			for reference in gbseq.findall('GBSeq_references/GBReference'):
