@@ -165,4 +165,3 @@ if __name__ == "__main__":
 
 	parser = GenBankParser(args.input_dir, args.output_dir)
 	parser.process()
-
