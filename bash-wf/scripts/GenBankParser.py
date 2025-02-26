@@ -124,6 +124,7 @@ class GenBankParser:
 			content['sequence'] = sequence.text if sequence is not None else ''
 			content['genes'] = '; '.join([f"{gene['gene_name']}({gene['gene_location']})" for gene in genes])
 			content['cds_info'] = '; '.join([f"{k}: {v}" for each_cds in cds for k, v in each_cds.items()])
+
 			nucl_count = self.count_ATGCN(content['sequence'])
 			content['a'] = nucl_count[0]
 			content['t'] = nucl_count[1]
