@@ -1,0 +1,9 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region AF009606.1 1 9646
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=2847144
+AF009606.1	Genbank	region	1	9646	.	+	.	ID=AF009606.1:1..9646;Dbxref=taxon:2847144;gbkey=Src;isolate=H77;mol_type=genomic RNA;note=assembled from cDNA library representing a population of Hepatitis C virus genomes%3B viable virus can be reconstituted from this sequence;old-name=Hepatitis C virus subtype 1a;serotype=1a
+AF009606.1	Genbank	repeat_region	1	341	.	+	.	ID=id-AF009606.1:1..341;Note=5' NTR;gbkey=repeat_region
+AF009606.1	Genbank	CDS	342	9377	.	+	0	ID=cds-AAB66324.1;Dbxref=NCBI_GP:AAB66324.1;Name=AAB66324.1;gbkey=CDS;product=polyprotein;protein_id=AAB66324.1
+AF009606.1	Genbank	repeat_region	9375	9646	.	+	.	ID=id-AF009606.1:9375..9646;Note=3' NTR;gbkey=repeat_region
