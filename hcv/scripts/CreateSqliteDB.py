@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 
 class CreateSqliteDB:
-	def __init__(self, meta_data, features, pad_aln, gene_info, m49_countries, m49_interm_region, m49_regions, m49_sub_regions, proj_settings, fasta_sequence_file, tmp_dir, db_name):
+	def __init__(self, meta_data, features, pad_aln, gene_info, m49_countries, m49_interm_region, m49_regions, m49_sub_regions, proj_settings, fasta_sequence_file, insertions, tmp_dir, db_name):
 		self.meta_data = meta_data
 		self.features = features
 		self.pad_aln = pad_aln
@@ -23,6 +23,7 @@ class CreateSqliteDB:
 		self.m49_sub_regions = m49_sub_regions
 		self.proj_settings = proj_settings
 		self.fasta_sequence_file = fasta_sequence_file
+		self.insertions = insertions
 		self.tmp_dir = tmp_dir
 		self.db_name = db_name
 
@@ -43,6 +44,7 @@ class CreateSqliteDB:
 		df_m49_region = pd.read_csv(join(self.m49_regions), sep=",")
 		df_m49_sub_region = pd.read_csv(join(self.m49_sub_regions), sep=",")
 		df_proj_setting = pd.read_csv(join(self.proj_settings), sep=",")
+		df_insertions = pd.read_csv(join(self.insertions), sep=",")
 		df_fasta_sequences = self.load_fasta()
 		conn = sqlite3.connect(self.db_name)
 		cursor = conn.cursor()
@@ -57,6 +59,7 @@ class CreateSqliteDB:
 		df_m49_sub_region.to_sql("m49_sub_regions", conn, if_exists="replace", index=False)
 		df_proj_setting.to_sql("project_settings", conn, if_exists="replace", index=False)
 		df_fasta_sequences.to_sql("sequences", conn, if_exists="replace", index=False)
+		df_insertions.to_sql("insertions", conn, if_exists="replace", index=False)
 		cursor.execute("PRAGMA foreign_keys = ON;")
 
 		cursor.execute("""CREATE TABLE IF NOT EXISTS meta_data AS SELECT * FROM meta_data;""")
@@ -69,6 +72,7 @@ class CreateSqliteDB:
 		cursor.execute("""CREATE TABLE IF NOT EXISTS m49_sub_regions AS SELECT * FROM m49_sub_regions;""")
 		cursor.execute("""CREATE TABLE IF NOT EXISTS project_settings AS SELECT * FROM project_settings;""")
 		cursor.execute("""CREATE TABLE IF NOT EXISTS sequences AS SELECT * FROM sequences;""")
+		cursor.execute("""CREATE TABLE IF NOT EXISTS insertions AS SELECT * FROM insertions;""")
 		conn.commit()
 		conn.close()
 
@@ -84,6 +88,7 @@ def process(args):
 			args.m49_sub_regions,
 			args.proj_settings,
 			args.fasta_sequences,
+			args.insertion_file,
 			args.tmp_dir,
 			args.db_name,
 		)
@@ -104,6 +109,7 @@ if __name__ == "__main__":
 	parser.add_argument('-msr', '--m49_sub_regions', help='M49 sub-regions', default="generic/Tables/m49_sub_region.csv")
 	parser.add_argument('-s', '--proj_settings', help='Project settings', default="tmp/Software_info/software_info.tsv") 
 	parser.add_argument('-fa', '--fasta_sequences', help='Fasta sequences', default="tmp/GenBank-matrix/sequences.fa")
+	parser.add_argument('-i', '--insertion_file', help='Nextalign insertion file', default="tmp/Tables/insertions.tsv")
 	parser.add_argument('-d', '--db_name', help='Name of the Sqlite database', default="gdb.db")
 	args = parser.parse_args()
 
