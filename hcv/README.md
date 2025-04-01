@@ -1,7 +1,7 @@
 # Overview
 The directory contains the reference accession list (generic/ref_list.txt) and the master GFF file (tmp/Gff).
 
-## Running the workflow
+## Running the complete workflow
 ```shell
 bash vgtk-hcv.sh
 ```
