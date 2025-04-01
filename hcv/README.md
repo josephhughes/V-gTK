@@ -1,5 +1,10 @@
 # Overview
-New scripts with class and init method
+The directory contains the reference accession list (generic/ref_list.txt) and the master GFF file (tmp/Gff).
+
+## Running the workflow
+```shell
+bash vgtk-hcv.sh
+```
 
 ## Running the scripts
 ```shell
