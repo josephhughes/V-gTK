@@ -80,11 +80,11 @@ echo "FilterAndExtractSequences.py completed successfully."
 echo ""
 
 #python BlastAlignment.py
-#if [ "$is_segmented" = "Y" ]; then
-#	python "${scripts_dir}/BlastAlignment.py" -s Y -f "${generic_dir}/ref_list.txt" -m ${master_acc}
-#else
-#	python "${scripts_dir}/BlastAlignment.py" -f "${generic_dir}/ref_list.txt" -m ${master_acc}
-#fi
+if [ "$is_segmented" = "Y" ]; then
+	python "${scripts_dir}/BlastAlignment.py" -s Y -f "${generic_dir}/ref_list.txt" -m ${master_acc}
+else
+	python "${scripts_dir}/BlastAlignment.py" -f "${generic_dir}/ref_list.txt" -m ${master_acc}
+fi
 
 if [ $? -ne 0 ]; then
   echo "Error: BlastAlignment.py failed."
