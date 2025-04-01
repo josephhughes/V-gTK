@@ -44,9 +44,9 @@ class CreateSqliteDB:
 		df_m49_region = pd.read_csv(join(self.m49_regions), sep=",")
 		df_m49_sub_region = pd.read_csv(join(self.m49_sub_regions), sep=",")
 		df_proj_setting = pd.read_csv(join(self.proj_settings), sep=",")
-		df_insertions = pd.read_csv(join(self.insertions), sep=",")
+		df_insertions = pd.read_csv(join(self.insertions), sep="\t")
 		df_fasta_sequences = self.load_fasta()
-		conn = sqlite3.connect(self.db_name)
+		conn = sqlite3.connect(self.db_name + ".db")
 		cursor = conn.cursor()
 
 		df_meta_data.to_sql("meta_data", conn, if_exists="replace", index=False)
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 	parser.add_argument('-s', '--proj_settings', help='Project settings', default="tmp/Software_info/software_info.tsv") 
 	parser.add_argument('-fa', '--fasta_sequences', help='Fasta sequences', default="tmp/GenBank-matrix/sequences.fa")
 	parser.add_argument('-i', '--insertion_file', help='Nextalign insertion file', default="tmp/Tables/insertions.tsv")
-	parser.add_argument('-d', '--db_name', help='Name of the Sqlite database', default="gdb.db")
+	parser.add_argument('-d', '--db_name', help='Name of the Sqlite database', default="gdb")
 	args = parser.parse_args()
 
 	process(args)

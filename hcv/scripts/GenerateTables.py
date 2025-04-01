@@ -105,6 +105,7 @@ class GenerateTables:
 
 	def created_alignment_table(self, blast_dict):
 		accessions = {}
+		missing_accs = []
 		header = ["sequence_id", "alignment_name", "alignment"]
 		write_file = open(join(self.output_dir, "sequence_alignment.tsv"), 'w')
 		write_file.write("\t".join(header) + "\n")
@@ -115,11 +116,38 @@ class GenerateTables:
 				if rows[0] in blast_dict:
 					write_file.write(rows[0].strip() + '\t' +
 						blast_dict[rows[0]].strip() + '\t' + rows[1] + '\n')
+				else:
+					missing_accs.append(rows[0].strip())
+
+		# this will work when there is a multiple master references
+		for each_ref_aln in os.listdir(join(self.nextalign_dir)):
+			for each_ref_aln_file in os.listdir(join(self.nextalign_dir, each_ref_aln)):
+				rds = read_file.fasta(join(self.nextalign_dir, each_ref_aln, each_ref_aln_file, each_ref_aln_file + ".aligned.fasta"))
+				for rows in rds:
+					if rows[0].strip() in missing_accs:
+						write_file.write(rows[0].strip() + '\t' + each_ref_aln_file + '\t' + rows[1] + '\n')
+						accessions[rows[0].strip()] = 1
 
 		write_file.close()
+		print("Removing the redundancy sequences...")
+		self.remove_redundancy_from_alignment(join(self.output_dir, "sequence_alignment.tsv"))
 
-	def create_sequence_table(self):
-		shutil.copy(self.sequences, self.tmp_dir)
+	def remove_redundancy_from_alignment(self, file_path, delimiter="\t"):
+		seen = set()
+		lines_to_write = []
+
+		with open(file_path, "r") as infile:
+			for line in infile:
+				if not line.strip():
+					continue  # skip empty lines
+				key = line.strip().split(delimiter)[0]
+				if key not in seen:
+					seen.add(key)
+					lines_to_write.append(line)
+
+		with open(file_path, "w") as outfile:
+			outfile.writelines(lines_to_write)
+		print(f"Redundancy removed. File updated: {file_path}")
 
 	def create_insertion_table(self):
 		write_file = open(join(self.tmp_dir, "insertions.tsv"), 'w')
@@ -140,8 +168,8 @@ class GenerateTables:
 		blast_dictionary = self.load_blast_hits(self.blast_hits)
 		#self.load_gb_matrix()
 		self.created_alignment_table(blast_dictionary)
-		self.host_table()
-		self.create_insertion_table()
+		#self.host_table()
+		#self.create_insertion_table()
 
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Creating sqlite DB')
