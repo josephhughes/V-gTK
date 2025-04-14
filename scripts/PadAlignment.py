@@ -39,7 +39,7 @@ class PadAlignment:
     
 		return updated_sequences
 
-	# Process a single reference alignment file and its subalignments. 
+	# Process a single reference alignment file and its subalignments 
 	def process_master_alignment(self, reference_alignment_file, input_dir, base_dir, output_dir, keep_intermediate_files=False):
 		master_alignment = SeqIO.to_dict(SeqIO.parse(reference_alignment_file, "fasta"))
 		merged_sequences = []  # List to store sequences for the merged output

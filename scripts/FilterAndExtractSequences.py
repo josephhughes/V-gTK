@@ -2,14 +2,16 @@ import os
 import csv
 import shutil
 import tempfile
+from Bio import SeqIO
 from os.path import join
 from argparse import ArgumentParser
 
 #genbank_divisions = ['VRL', 'PAT', 'SYN', 'ENV']
 
 class FilterAndExtractSequences:
-	def __init__(self, genbank_matrix, genbank_matrix_filtered, ref_file, base_dir, output_dir, total_length, real_length, prop_ambigious, segmented_virus, gb_division, valid_divisions, seq_type):
+	def __init__(self, genbank_matrix, sequence_file, genbank_matrix_filtered, ref_file, base_dir, output_dir, total_length, real_length, prop_ambigious, segmented_virus, gb_division, valid_divisions, seq_type):
 		self.genbank_matrix = genbank_matrix
+		self.sequence_file = sequence_file
 		self.genbank_matrix_filtered = genbank_matrix_filtered
 		self.ref_file = ref_file
 		self.base_dir = base_dir
@@ -22,6 +24,12 @@ class FilterAndExtractSequences:
 		self.valid_divisions = valid_divisions
 		self.seq_type = seq_type
 		os.makedirs(join(self.base_dir, self.output_dir), exist_ok=True)
+
+	def fasta_to_dict(self):
+		seq_dict = {}
+		for record in SeqIO.parse(self.sequence_file, "fasta"):
+			seq_dict[record.id] = str(record.seq)
+		return seq_dict
 
 	def read_ref_list(self):
 		ref_list = {}
@@ -54,6 +62,7 @@ class FilterAndExtractSequences:
 		#if not self.check_gb_division():
 		#	print("Error: Invalid GenBank division specified.")
 		#	return
+		sequence_dict = self.fasta_to_dict()
 		exclusion_dict = {}
 	
 		if self.segmented_virus == "Y":
@@ -85,8 +94,8 @@ class FilterAndExtractSequences:
 					gb_division = row['division']
 					seq_len = int(row['length'])
 					seq_len_without_n = seq_len - int(row['n'])
-					accession = row['primary_accession']
-					sequence = row['sequence']
+					accession = row['gi_number'] #row['primary_accession']
+					sequence = sequence_dict[accession]
 
 					exclusion_status = 0
 					exclusion_criteria = ""
@@ -135,6 +144,7 @@ class FilterAndExtractSequences:
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Filter sequences and prepare sequences for BLAST alignment')
 	parser.add_argument('-g', '--genbank_matrix', help='GenBank matrix file', required=True)
+	parser.add_argument('-sf', '--sequence_file', help='fasta sequence file', default='tmp/GenBank-matrix/sequences.fa')
 	parser.add_argument('-f', '--genbank_matrix_filtered', help='Filtered GenBank matrix file storage directory', default='tmp/GenBank-matrix')
 	parser.add_argument('-r', '--ref_file', help='Text file containing list of reference sequence accessions', required=True)
 	parser.add_argument('-b', '--base_dir', help='Base directory', default='tmp')
@@ -162,6 +172,7 @@ if __name__ == "__main__":
 
 	processor = FilterAndExtractSequences(
 		genbank_matrix=args.genbank_matrix,
+		sequence_file = args.sequence_file,
 		genbank_matrix_filtered=args.genbank_matrix_filtered,
 		ref_file=args.ref_file,
 		base_dir = args.base_dir,

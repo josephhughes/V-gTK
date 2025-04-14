@@ -230,6 +230,7 @@ class BlastAlignment:
 			else:
 				grouped_dict[ref_acc].append(query_acc)
 
+		print('\n'.join(grouped_dict.keys()))
 		seq_dicts = {}
 		query_seqs = read_file.fasta(join(sorted_all, "query_seq.fa"))
 		for rows in query_seqs:
@@ -490,9 +491,9 @@ class BlastAlignment:
 					shutil.rmtree(blast_tmp_dir)
 			else:
 				#self.run_makeblastdb(join(self.base_dir, self.output_dir))
-				self.run_blastn(join(self.base_dir, self.output_dir), self.query_fasta)
+				#self.run_blastn(join(self.base_dir, self.output_dir), self.query_fasta)
 				self.process_non_segmented_virus(join(self.base_dir, self.output_dir), self.query_fasta)
-				self.update_gB_matrix(self.query_fasta, join(self.base_dir, self.output_dir, "query_uniq_tophits.tsv"), self.gb_matrix)
+				#self.update_gB_matrix(self.query_fasta, join(self.base_dir, self.output_dir, "query_uniq_tophits.tsv"), self.gb_matrix)
 
 # 1. Read the existing accessions from query file (done)
 # 2. read the master accessions from gB_matrix (done)

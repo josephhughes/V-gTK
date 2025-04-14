@@ -238,6 +238,7 @@ class GenBankParser:
 			for _, row in df.iterrows():
 				fasta_file.write(f">{row['primary_accession']}\n{row['sequence']}\n")
 
+		df.drop(columns=['sequence'], inplace=True)
 		df.to_csv(join(self.base_dir, self.output_dir, "gB_matrix_raw.tsv"), sep="\t", index=False)
 		
 if __name__ == "__main__":

@@ -129,7 +129,7 @@ class GenerateTables:
 						accessions[rows[0].strip()] = 1
 
 		write_file.close()
-		print("Removing the redundancy sequences...")
+		print("Removing the Sequence redundancy")
 		self.remove_redundancy_from_alignment(join(self.base_dir, self.output_dir, "sequence_alignment.tsv"))
 
 	def remove_redundancy_from_alignment(self, file_path, delimiter="\t"):
@@ -165,6 +165,7 @@ class GenerateTables:
 		write_file.close()
 					
 	def process(self):
+		
 		blast_dictionary = self.load_blast_hits(self.blast_hits)
 		#self.load_gb_matrix()
 		self.created_alignment_table(blast_dictionary)
@@ -172,7 +173,7 @@ class GenerateTables:
 		self.create_insertion_table()
 
 if __name__ == "__main__":
-	parser = ArgumentParser(description='Creating sqlite DB')
+	parser = ArgumentParser(description='Generating tables sqlite DB')
 	parser.add_argument('-g', '--genbank_matrix', help='Genbank matrix table', default="tmp/GenBank-matrix/gB_matrix_raw.tsv")
 	parser.add_argument('-b', '--base_dir', help='base directory', default="tmp")
 	parser.add_argument('-o', '--output_dir', help='output directory to store all the db-ready tsv files', default="Tables")
