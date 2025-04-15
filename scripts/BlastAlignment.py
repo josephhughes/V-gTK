@@ -490,21 +490,11 @@ class BlastAlignment:
 				if self.keep_blast_tmp_dir == 'N':
 					shutil.rmtree(blast_tmp_dir)
 			else:
-				#self.run_makeblastdb(join(self.base_dir, self.output_dir))
-				#self.run_blastn(join(self.base_dir, self.output_dir), self.query_fasta)
+				self.run_makeblastdb(join(self.base_dir, self.output_dir))
+				self.run_blastn(join(self.base_dir, self.output_dir), self.query_fasta)
 				self.process_non_segmented_virus(join(self.base_dir, self.output_dir), self.query_fasta)
-				#self.update_gB_matrix(self.query_fasta, join(self.base_dir, self.output_dir, "query_uniq_tophits.tsv"), self.gb_matrix)
+				self.update_gB_matrix(self.query_fasta, join(self.base_dir, self.output_dir, "query_uniq_tophits.tsv"), self.gb_matrix)
 
-# 1. Read the existing accessions from query file (done)
-# 2. read the master accessions from gB_matrix (done)
-# 3. compare the accession from gB_matrix and query_file (done)
-# 4. If exists any new accession, create a temp directory inside Blast directory (done)
-# 5 create blast_db (done)
-# 6. perform blast (done)
-# 7. process blast result(Done)
-# 8. Report any no hist in exclsuion criteria of the gB_matrix(Done)
-# 9. Delete the temp directory(done)
-# 10. check the non_segmented function works without any error
 
 if __name__ == "__main__":
 	parser = ArgumentParser(description='Performs the BLAST alignment of query sequences against the given reference sequences')
