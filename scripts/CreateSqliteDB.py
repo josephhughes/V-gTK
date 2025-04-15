@@ -42,7 +42,7 @@ class CreateSqliteDB:
 		df_features = pd.read_csv(join(self.features), sep="\t")
 		df_aln = pd.read_csv(join(self.pad_aln), sep="\t")
 		df_gene = pd.read_csv(join(self.gene_info), sep="\t")
-		df_m49_country = pd.read_csv(join(self.m49_countries), sep=",")
+		df_m49_country = pd.read_csv(join(self.m49_countries), dtype={'m49_code': str} sep=",")
 		df_m49_interm = pd.read_csv(join(self.m49_interm_region), sep=",")
 		df_m49_region = pd.read_csv(join(self.m49_regions), sep=",")
 		df_m49_sub_region = pd.read_csv(join(self.m49_sub_regions), sep=",")
