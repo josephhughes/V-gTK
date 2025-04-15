@@ -23,7 +23,7 @@ class GenerateTables:
 		self.host_taxa_file = host_taxa_file
 		self.nextalign_dir = nextalign_dir
 		self.email = email
-		os.makedirs(self.base_dir, self.output_dir, exist_ok=True)
+		os.makedirs(join(self.base_dir, self.output_dir), exist_ok=True)
 
 	'''
 	def fetch_taxonomy_details(self, tax_id):
