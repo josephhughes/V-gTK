@@ -10,7 +10,7 @@ is_segmented=${3:-N} #segmented virus or not Y for Yes and N for Not
 master_acc="NC_001542"
 
 #python GenBankFetcher.py
-#python "${scripts_dir}/GenBankFetcher.py" -t "$TAX_ID" --update "tmp/GenBank-matrix/gB_matrix_raw.tsv"
+python "${scripts_dir}/GenBankFetcher.py" -t "$TAX_ID" --update "tmp/GenBank-matrix/gB_matrix_raw.tsv"
 if [ $? -ne 0 ]; then
   echo "Error: GenBankFetcher.py failed."
   exit 1
@@ -111,7 +111,7 @@ echo "PadAlignment.py for query sequence is completed successfully."
 echo ""
 
 #python "${scripts_dir}/CalcAlignmentCord.py
-python "${scripts_dir}/CalcAlignmentCord.py" -i "tmp/Pad-alignment/NC_001542.aligned_merged_MSA.fasta" -m $master_acc -g "tmp/Gff/NC_001542.gff3"
+python "${scripts_dir}/CalcAlignmentCord-method2.py" -i "tmp/Pad-alignment/" -m $master_acc -g "tmp/Gff/NC_001542.gff3"
 if [ $? -ne 0 ]; then
   echo "Error: CalcAlignmentCord.py failed."
   exit 1
@@ -128,8 +128,6 @@ if [ $? -ne 0 ]; then
 fi
 echo "SoftwareVersion.py completed successfully."
 echo ""
-
-### add calculatecoordinate function here
 
 # python GenerateTables.py
 python "${scripts_dir}/GenerateTables.py" 

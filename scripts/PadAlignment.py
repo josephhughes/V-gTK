@@ -1,6 +1,7 @@
 # Usage: python pad_subMSA.py -r <reference_alignment_dir> -i <input_dir> [-o <output_dir>] [--keep_intermediate_files]
 
 import os
+import shutil
 import argparse
 from os.path import join
 from Bio import SeqIO
@@ -55,10 +56,10 @@ class PadAlignment:
 				# Insert the gaps from the reference into the subalignment sequences
 				updated_seqs = self.insert_gaps(ref_aligned, subalignment_seqs)
 
-				os.makedirs(output_dir, exist_ok=True) 
+				os.makedirs(join(output_dir), exist_ok=True) 
 				output_file = os.path.join(output_dir, f"{ref_id}_aligned_padded.fasta")
 
-				with open(output_file, "w") as output_handle:
+				with open(join(output_file), "w") as output_handle:
 					SeqIO.write(updated_seqs, output_handle, "fasta")
 					print(f"Saved updated alignment to {output_file}")
             
@@ -85,6 +86,7 @@ class PadAlignment:
 				if os.path.exists(padded_file):
 					os.remove(padded_file)
 					print(f"Deleted intermediate file {padded_file}")
+			shutil.rmtree(output_dir)
 
 	def find_fasta_file(self, input_dir):
 		directory = join(self.base_dir, self.output_dir)

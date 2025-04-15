@@ -25,6 +25,7 @@ class GenerateTables:
 		self.email = email
 		os.makedirs(self.output_dir, exist_ok=True)
 
+	'''
 	def fetch_taxonomy_details(self, tax_id):
 		Entrez.email = self.email
 		try:
@@ -49,7 +50,43 @@ class GenerateTables:
 		except urllib.error.HTTPError as e:
 			print(f"HTTPError: {e}. Retrying...")
 			raise
+		'''
 
+	def fetch_taxonomy_details(self, tax_id, max_retries=5, delay=2):
+		Entrez.email = self.email
+		for attempt in range(1, max_retries + 1):
+			try:
+				handle = Entrez.efetch(db="taxonomy", id=tax_id, retmode="xml")
+				records = Entrez.read(handle)
+				time.sleep(1)
+				handle.close()
+
+				if records:
+					tax_record = records[0]
+					taxonomy_info = {
+						"Scientific Name": tax_record.get("ScientificName", "N/A"),
+						"Taxonomy ID": tax_record.get("TaxId", "N/A"),
+						"Rank": tax_record.get("Rank", "N/A"),
+						"Lineage": tax_record.get("Lineage", "N/A"),
+						"Other Names": tax_record.get("OtherNames", {}).get("Synonym", []),
+					}
+					return taxonomy_info
+				else:
+					return "No taxonomy details found for the given ID."
+
+			except urllib.error.HTTPError as e:
+				print(f"HTTPError on attempt {attempt} for TaxID {tax_id}: {e}")
+				if attempt == max_retries:
+					print("Max retries reached. Skipping this TaxID.")
+					return {
+						"Scientific Name": "N/A",
+						"Taxonomy ID": tax_id,
+						"Rank": "N/A",
+						"Lineage": "N/A",
+						"Other Names": [],
+						}
+				else:
+					time.sleep(delay)
 
 	def host_taxa_file_check(self):
 		host_tax_id_list = []
