@@ -107,7 +107,7 @@ if __name__ == "__main__":
 	parser.add_argument('-rf', '--features', help='Features table', default="tmp/Tables/features.tsv")
 	#parser.add_argument('-qf', '--query_features', help='Query feature table', default="tmp/Tables/query_features.tsv")
 	parser.add_argument('-p', '--pad_aln', help='Padded alignment file', default="tmp/Tables/sequence_alignment.tsv")
-	parser.add_argument('-g', '--gene_info', help='Gene table', default="generic/rabv/Tables/gene_info.tsv")
+	parser.add_argument('-g', '--gene_info', help='Gene table', default="generic/rabv/Tables/gene_info.csv")
 	parser.add_argument('-mc', '--m49_countries', help='M49 countries', default="assets/m49_country.csv")
 	parser.add_argument('-mir', '--m49_interm_region', help='M49 intermediate regions', default="assets/m49_intermediate_region.csv")
 	parser.add_argument('-mr', '--m49_regions', help='M49 regions', default="assets/m49_region.csv")
