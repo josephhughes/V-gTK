@@ -1,3 +1,4 @@
 #V-gTK(Viral Genome Tool Kit)
+Framework for delivering end-to-end curation, annotation, and structured organization of viral sequences.
 
-[The documentations are available at](https://josephhughes.github.io/V-gTK/)
+[README and documentations](https://josephhughes.github.io/V-gTK/)
